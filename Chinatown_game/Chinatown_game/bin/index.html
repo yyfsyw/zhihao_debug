@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<!-- 
+    webSQL.html by Yunfei Yang
+    
+    created 2017-08-02
+
+    Copyright (c) 2017 This file may be used for personal educational purposes as needed. 
+    Use for other purposes is granted provided that this notice is
+    retained and any changes made are clearly indicated as such. 
+-->
+
+<head>
+    <title>
+        Player_List
+    </title>
+    <link rel="stylesheet" type="text/css" href="../CSS/main.css">
+    
+    <script language="javascript" src="../Javascript/bwH5LS.js"></script>
+    
+    <script language="javascript">
+        var db = prepareDatabase();
+        var createSQL = 'CREATE TABLE IF NOT EXISTS tTravel (' +
+                'id INTEGER PRIMARY KEY,' +
+                'traveler TEXT,' +
+                'destination TEXT,' +
+                'transportation TEXT' +
+            ')';
+
+        // Check if this browser supports Web SQL
+        function getOpenDatabase() {
+            try {
+                if( !! window.openDatabase ) return window.openDatabase;
+                else return undefined;
+            } catch(e) {
+                return undefined;
+            }
+        }
+
+        // Open the Web SQL database
+        function prepareDatabase() {
+            var odb = getOpenDatabase();
+            if(!odb) {
+                dispError('Web SQL Not Supported');
+                return undefined;
+            } else {
+                // Create the maximum space for Web 
+                var db = odb( 'testDatabase', '1.0', 'A Test Database', 10 * 1024 * 1024 );
+                db.transaction(function (t) {
+                    t.executeSql( createSQL, [], function(){}, function(t, e) {
+                        alert('create table: ' + e.message);
+                    });
+                });
+                return db;
+            }
+        }
+
+        // How many rows do we have?
+        function countRows() {
+            if(!db) return;
+            db.readTransaction(function (t) {
+                t.executeSql('SELECT COUNT(*) AS c FROM tTravel', [], function (t, r) {
+                    var c = r.rows.item(0).c;
+                    element('rowCount').innerHTML = c ? c : 0;
+                }, function(t, e) {
+                    alert('countRows: ' + e.message);
+                });
+            });
+        }
+
+        // Create the Edit and Delete buttons for a row 
+        function rowButtons( id, traveler ) {
+            return '<form><input type="button" value="Edit" onClick="javascript:editGo(' + id + ')"/>' +
+                '<input type="button" value="Delete" onClick="javascript:deleteGo(' + id + ', &quot;' + traveler + '&quot;)"/></form>';
+        }
+
+        // Main display function
+        function dispResults() {
+            if(errorMessage) {
+                element('results').innerHTML = errorMessage;
+                return;
+            }
+
+            countRows();    // update the row count each time the display is refreshed
+
+            if(db) {
+                db.readTransaction(function(t) {    // readTransaction sets the database to read-only
+                    t.executeSql('SELECT * FROM tTravel ORDER BY LOWER(traveler)', [], function(t, r) {
+                        var bwt = new bwTable();
+                        bwt.setHeader(['Name', 'Start/Restart Page', 'Result', '']);
+                        for( var i = 0; i < r.rows.length; i++ ) {
+                            var row = r.rows.item(i);
+                            bwt.addRow([row.traveler, row.destination, row.transportation, rowButtons(row.id, row.traveler)]);
+                        }
+                        element('results').innerHTML = bwt.getTableHTML();
+                        element('PlayerForm').elements['traveler'].focus();
+                    });
+                });
+            }
+        }
+
+        // add or update rows in the table
+        function dbGo() {
+            if(errorMessage) return;
+
+            var f = element('PlayerForm');
+            var action = f.elements['inputAction'].value;
+            var traveler = f.elements['traveler'].value;
+            var destination = f.elements['destination'].value;
+            var transportation = f.elements['transportation'].value;
+            var key = f.elements['key'].value;
+
+            switch(action) {
+            case 'add': 
+                if(! (traveler || destination || transportation)) break;
+                db.transaction( function(t) {
+                    t.executeSql(' INSERT INTO tTravel ( traveler, destination, transportation ) VALUES ( ?, ?, ? ) ',
+                        [ traveler, destination, transportation ]
+                    );
+                }, function(t, e){ alert('Insert row: ' + e.message); }, function() {
+                    resetPlayerForm();
+                });
+                break;
+            case 'update':
+                if(! (traveler || destination || transportation)) break;
+                db.transaction( function(t) {
+                    t.executeSql(' UPDATE tTravel SET traveler = ?, destination = ?, transportation = ? WHERE id = ?',
+                        [ traveler, destination, transportation, key ]
+                    );
+                }, function(t, e){ alert('Update row: ' + e.message); }, function() {
+                    resetPlayerForm();
+                });
+                break;
+            }
+            dispResults();
+        }
+
+        // update the edited row
+        function editGo(id) {
+            db.readTransaction(function(t) {
+                t.executeSql('SELECT * FROM tTravel WHERE id = ?', [id], function(t, r) {
+                    var row = r.rows.item(0);
+                    if(row) {
+                        var f = element('PlayerForm');
+                        f.elements['traveler'].value = row.traveler;
+                        f.elements['destination'].value = row.destination;
+                        f.elements['transportation'].value = row.transportation;
+                        f.elements['goButton'].value = 'Update';
+                        f.elements['inputAction'].value = 'update';
+                        f.elements['key'].value = row.id;
+                        f.elements['traveler'].focus();
+                        f.elements['traveler'].select();
+                    }
+                });
+            });
+        }
+
+        // confirm and delete a row
+        function deleteGo(id, traveler) {
+            if(confirm('Delete ' + traveler + ' (ID: ' + id + ')?')) {
+                db.transaction(function(t) {
+                    t.executeSql('DELETE FROM tTravel WHERE id = ?', [id]);
+                });
+                resetPlayerForm();
+                dispResults();
+            }
+        }
+
+        // clear all the form fields and reset the button and action elements
+        function resetPlayerForm() {
+            var f = element('PlayerForm');
+            for( var n in [ 'traveler', 'destination', 'transportation', 'key' ] ) {
+                f.elements[n].value = '';
+            }
+            f.elements['inputAction'].value = 'add';
+            f.elements['goButton'].value = 'Add';
+        }
+
+        // delete all the rows in the table
+        function clearDB() {
+            if(confirm('Clear the entire table?')) {
+                db.transaction(function(t) {
+                    t.executeSql('DELETE FROM tTravel');
+                });
+                dispResults();
+            }
+        }
+
+        function initDisp() {
+            dispResults();
+        }
+
+        window.onload = function() {
+            initDisp();
+        }
+        
+     
+    </script>
+    
+ 
+    
+<body>
+    <!--Set Game start-->
+    
+<!--
+    id top for go back to top
+    <p id="top">
+        <a href="https://www.baidu.com/" target="_blank">Waverly Adventure</a>
+    </p> 
+-->
+
+<div id="content">
+
+    <h1> 
+        Waverly Adventure Player List
+    </h1>
+   
+    
+    
+    <!--    Get Random number for choosing Game-->
+
+    <p id="text">There are three sections in this game</p>
+    <button id="myButton">Click to randomly choose a game</button>
+    <script type= "text/javascript">
+        document.getElementById("myButton").onclick = function(){
+        var minNumber = 1; // The minimum number you want
+        var maxNumber = 3; // The maximum number you want
+        var randomnumber = Math.floor(Math.random() * (maxNumber) + minNumber); 
+        
+        // Generates  random number
+        
+        var str = "Here is the link of character";
+        //document.getElementById("text").innerHTML = randomnumber;
+            switch (randomnumber){
+                case 1:
+                    str = str + "1";
+                    //var result = str.link("https://www.baidu.com");
+                    var result = str.link(window.open("https://www.baidu.com",'_blank'));
+                    document.getElementById("text").innerHTML = result;
+                    //window.open("https://www.baidu.com",'_blank');
+                    break;
+                    
+
+                case 2:
+                    str = str + "2";
+                    //var result = str.link("https://www.yahoo.com");
+                    var result = str.link(window.open("https://www.yahoo.com",'_blank'));
+                    document.getElementById("text").innerHTML = result;
+                    //window.open("https://www.yahoo.com",'_blank');
+                    break;
+
+                case 3:
+                    str = str + "3";
+                    //var result = str.link("https://www.google.com");
+                    var result = str.link(window.open("https://www.google.com",'_blank'));
+                    document.getElementById("text").innerHTML = result;
+                    //window.open("https://www.google.com",'_blank');
+                    break;                  
+            } 
+        }
+    </script>
+
+
+    
+
+    
+
+    <div id="form">
+        <form id="PlayerForm" "top title_position">
+            <table class="form">
+                    
+                <!-- id top for go back to top-->
+<!--
+                <p id="top title_position">
+                    <a href="https://www.baidu.com/" target="_blank">Waverly Adventure</a>
+                </p> 
+-->
+                <tr><td class="label"> Name </td><td> <input type="text" name="traveler" /> </td></tr>
+                
+                <tr><td class="label"> Start/Re-start Page </td>
+                    <td> 
+                        <!--<input type="text" name="destination" /> -->
+                        <p>Game 1<input type="radio" name="destination" /></p>
+                        <p>Game 2<input type="radio" name="destination" /></p>
+                        <p>Game 3<input type="radio" name="destination" /></p>
+
+                    </td>
+                </tr>
+<!--
+                        <p>Game Selection:
+                            <select>
+                                <option>Game1</option>
+                                <option>Game2</option>
+                                <option>Gmae3</option>
+                            </select>
+                        </p>
+-->
+               
+                <tr><td class="label"> Result </td><td> <input type="text" name="transportation" /> </td></tr>
+                <tr><td colspan="2" class="button">
+                    <input id="formSubmit" type="button" name="goButton" value="Add" onClick="javascript:dbGo()" />
+                </td></tr>
+            </table>
+        <input id="inputAction" type="hidden" name="action" value="add" />
+        <input id="inputKey" type="hidden" name="key" value="0" />
+        </form>
+    </div>
+    
+    <p id="rcp" class="message">
+        There are <span id="rowCount">_</span> Players in this game.
+        <input type="button" value="Empty" onClick="javascript:clearDB()" />
+    </p>
+    <div id="results">
+    <!-- results show here -->
+    </div>
+    <!--Back to Top-->
+    <p><a href="#top">Back to top</a></p>
+    
+</div>
+</body>
+</html>
