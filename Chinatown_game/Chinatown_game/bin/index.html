@@ -207,9 +207,7 @@
     
 <!--
     id top for go back to top
-    <p id="top">
-        <a href="https://www.baidu.com/" target="_blank">Waverly Adventure</a>
-    </p> 
+
 -->
 
 <div id="content">
@@ -238,9 +236,11 @@
                 case 1:
                     str = str + "STEPHANIE LU'S BIRTHDAY";
                     //var result = str.link("https://www.baidu.com");
-                    //var result = str.link(window.open("https://www.baidu.com",'_blank'));
+                    //var result =
+                    //str.link(window.open("https://www.baidu.com",'_blank'));
                     var result = str.link(window.open("step-1.html",'_blank'));
-                    document.getElementById("text").innerHTML = str;
+                    //document.getElementById("text").innerHTML = str;
+                    document.getElementById("text").innerHTML = str.link("step-1.html");
                     //window.open("https://www.baidu.com",'_blank');
                     break;
                     
@@ -290,7 +290,7 @@
                 
                 <tr><td class="label"> Path </td>
                     <td> 
-                        <input type="text" name="destination" /> 
+                        <input type="text" name="destination" />                       
                     </td>
                 </tr> 
                 
