@@ -215,15 +215,15 @@
 <div id="content">
 
     <h1> 
-        Waverly Adventure Player List
+        Waverly Adventure Game Player List
     </h1>
    
     
     
     <!--    Get Random number for choosing Game-->
 
-    <p id="text">There are three sections in this game</p>
-    <button id="myButton">Click to randomly choose a game</button>
+    <p id="text">There are three sections in this game, we have randomly choose click below</p>
+    <button id="myButton">Choose character</button>
     <script type= "text/javascript">
         document.getElementById("myButton").onclick = function(){
         var minNumber = 1; // The minimum number you want
@@ -232,14 +232,14 @@
         
         // Generates  random number
         
-        var str = "Here is the link of character";
+        var str = "The character you be selected is ";
         //document.getElementById("text").innerHTML = randomnumber;
             switch (randomnumber){
                 case 1:
                     str = str + "1";
                     //var result = str.link("https://www.baidu.com");
                     var result = str.link(window.open("https://www.baidu.com",'_blank'));
-                    document.getElementById("text").innerHTML = result;
+                    document.getElementById("text").innerHTML = str;
                     //window.open("https://www.baidu.com",'_blank');
                     break;
                     
@@ -248,7 +248,7 @@
                     str = str + "2";
                     //var result = str.link("https://www.yahoo.com");
                     var result = str.link(window.open("https://www.yahoo.com",'_blank'));
-                    document.getElementById("text").innerHTML = result;
+                    document.getElementById("text").innerHTML = str;
                     //window.open("https://www.yahoo.com",'_blank');
                     break;
 
@@ -256,7 +256,7 @@
                     str = str + "3";
                     //var result = str.link("https://www.google.com");
                     var result = str.link(window.open("https://www.google.com",'_blank'));
-                    document.getElementById("text").innerHTML = result;
+                    document.getElementById("text").innerHTML = str;
                     //window.open("https://www.google.com",'_blank');
                     break;                  
             } 
@@ -280,26 +280,13 @@
 -->
                 <tr><td class="label"> Name </td><td> <input type="text" name="traveler" /> </td></tr>
                 
-                <tr><td class="label"> Start/Re-start Page </td>
+                <tr><td class="label"> Path </td>
                     <td> 
-                        <!--<input type="text" name="destination" /> -->
-                        <p>Game 1<input type="radio" name="destination" /></p>
-                        <p>Game 2<input type="radio" name="destination" /></p>
-                        <p>Game 3<input type="radio" name="destination" /></p>
+                        <input type="text" name="destination" /> 
 
                     </td>
-                </tr>
-<!--
-                        <p>Game Selection:
-                            <select>
-                                <option>Game1</option>
-                                <option>Game2</option>
-                                <option>Gmae3</option>
-                            </select>
-                        </p>
--->
-               
-                <tr><td class="label"> Result </td><td> <input type="text" name="transportation" /> </td></tr>
+                </tr>   
+                <tr><td class="label"> Results </td><td> <input type="text" name="transportation" /> </td></tr>
                 <tr><td colspan="2" class="button">
                     <input id="formSubmit" type="button" name="goButton" value="Add" onClick="javascript:dbGo()" />
                 </td></tr>
