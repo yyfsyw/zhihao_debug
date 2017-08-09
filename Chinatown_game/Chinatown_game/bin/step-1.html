@@ -114,16 +114,15 @@
             var addr= window.location.href ;
             //print it out on screen
             //document.getElementById("demo").innerHTML = addr;
+            
+            // Store it in the local storage
+            localStorage.setItem('selected', addr);
+            
             window.alert('Game will be save here and waiting you come back!');
             //go back to home pages
 
-               window.location.href="./index.html"
+            window.location.href="./index.html"
 
-            //<a accesskey="h" id="home" href="../index.html">Home<\/a>
-            //try to show it on local storage page
-            
-
-            //2-1 make it could open a new window and restart
             
             // Create the Edit and Delete buttons for a row 
         

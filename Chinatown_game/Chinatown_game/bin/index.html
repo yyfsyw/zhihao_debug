@@ -218,11 +218,23 @@
    
     
     
+    
     <!--    Get Random number for choosing Game-->
 
     <p id="text">There are three sections in this game, we have randomly choose click below</p>
     <button id="myButton">Choose character</button>
     <script type= "text/javascript">
+        
+        
+        // Get it (step-1.html) from the local storage
+        var selected = localStorage.getItem('selected');
+        if (selected!=null) {
+            //window.alert("It works!"+selected);            
+        }
+        
+        
+        
+        
         document.getElementById("myButton").onclick = function(){
         var minNumber = 1; // The minimum number you want
         var maxNumber = 3; // The maximum number you want
