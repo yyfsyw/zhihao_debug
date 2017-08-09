@@ -90,7 +90,7 @@
                 db.readTransaction(function(t) {    // readTransaction sets the database to read-only
                     t.executeSql('SELECT * FROM tTravel ORDER BY LOWER(traveler)', [], function(t, r) {
                         var bwt = new bwTable();
-                        bwt.setHeader(['Name', 'Start/Restart Page', 'Result', '']);
+                        bwt.setHeader(['Name', 'Path', 'Result', '']);
                         for( var i = 0; i < r.rows.length; i++ ) {
                             var row = r.rows.item(i);
                             bwt.addRow([row.traveler, row.destination, row.transportation, rowButtons(row.id, row.traveler)]);
@@ -236,9 +236,10 @@
         //document.getElementById("text").innerHTML = randomnumber;
             switch (randomnumber){
                 case 1:
-                    str = str + "1";
+                    str = str + "STEPHANIE LU'S BIRTHDAY";
                     //var result = str.link("https://www.baidu.com");
-                    var result = str.link(window.open("https://www.baidu.com",'_blank'));
+                    //var result = str.link(window.open("https://www.baidu.com",'_blank'));
+                    var result = str.link(window.open("step-1.html",'_blank'));
                     document.getElementById("text").innerHTML = str;
                     //window.open("https://www.baidu.com",'_blank');
                     break;
@@ -269,24 +270,35 @@
     
 
     <div id="form">
+        <!-- id top for go back to top-->
         <form id="PlayerForm" "top title_position">
             <table class="form">
                     
-                <!-- id top for go back to top-->
+                
 <!--
                 <p id="top title_position">
                     <a href="https://www.baidu.com/" target="_blank">Waverly Adventure</a>
                 </p> 
 -->
-                <tr><td class="label"> Name </td><td> <input type="text" name="traveler" /> </td></tr>
+                
+                <!-- Create three input blank areas-->
+                
+                <tr><td class="label"> Name </td>
+                    <td> <input type="text" name="traveler" /> 
+                    </td>
+                </tr>
                 
                 <tr><td class="label"> Path </td>
                     <td> 
                         <input type="text" name="destination" /> 
-
                     </td>
-                </tr>   
-                <tr><td class="label"> Results </td><td> <input type="text" name="transportation" /> </td></tr>
+                </tr> 
+                
+                <tr><td class="label"> Results </td>
+                    <td> <input type="text" name="transportation" /> 
+                    </td>
+                </tr>
+
                 <tr><td colspan="2" class="button">
                     <input id="formSubmit" type="button" name="goButton" value="Add" onClick="javascript:dbGo()" />
                 </td></tr>
