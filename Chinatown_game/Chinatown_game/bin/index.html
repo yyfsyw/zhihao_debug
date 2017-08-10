@@ -3,14 +3,14 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 
-<!-- 
+<!--
     webSQL.html by Yunfei Yang
-    
+
     created 2017-08-02
 
-    Copyright (c) 2017 This file may be used for personal educational purposes as needed. 
+    Copyright (c) 2017 This file may be used for personal educational purposes as needed.
     Use for other purposes is granted provided that this notice is
-    retained and any changes made are clearly indicated as such. 
+    retained and any changes made are clearly indicated as such.
 -->
 
 <head>
@@ -18,9 +18,9 @@
         Player_List
     </title>
     <link rel="stylesheet" type="text/css" href="../CSS/main.css">
-    
+
     <script language="javascript" src="../Javascript/bwH5LS.js"></script>
-    
+
     <script language="javascript">
         var db = prepareDatabase();
         var createSQL = 'CREATE TABLE IF NOT EXISTS tTravel (' +
@@ -47,7 +47,7 @@
                 dispError('Web SQL Not Supported');
                 return undefined;
             } else {
-                // Create the maximum space for Web 
+                // Create the maximum space for Web
                 var db = odb( 'testDatabase', '1.0', 'A Test Database', 10 * 1024 * 1024 );
                 db.transaction(function (t) {
                     t.executeSql( createSQL, [], function(){}, function(t, e) {
@@ -71,7 +71,7 @@
             });
         }
 
-        // Create the Edit and Delete buttons for a row 
+        // Create the Edit and Delete buttons for a row
         function rowButtons( id, traveler ) {
             return '<form><input type="button" value="Edit" onClick="javascript:editGo(' + id + ')"/>' +
                 '<input type="button" value="Delete" onClick="javascript:deleteGo(' + id + ', &quot;' + traveler + '&quot;)"/></form>';
@@ -102,6 +102,7 @@
             }
         }
 
+
         // add or update rows in the table
         function dbGo() {
             if(errorMessage) return;
@@ -114,12 +115,23 @@
             var key = f.elements['key'].value;
 
             switch(action) {
-            case 'add': 
+            case 'add':
                 if(! (traveler || destination || transportation)) break;
                 db.transaction( function(t) {
                     t.executeSql(' INSERT INTO tTravel ( traveler, destination, transportation ) VALUES ( ?, ?, ? ) ',
                         [ traveler, destination, transportation ]
                     );
+
+                    //new sql execution for getting id
+                    t.executeSql(' SELECT id FROM tTravel WHERE traveler = ?', [traveler], function(t, r){
+                      var row = r.rows.item(0);
+                      document.getElementById("user-name").value = traveler;
+                      document.getElementById("user-id").value = row.id;
+                      //debugging
+                      // console.log("the id is:" + row.id);
+
+                    });
+
                 }, function(t, e){ alert('Insert row: ' + e.message); }, function() {
                     resetPlayerForm();
                 });
@@ -136,10 +148,12 @@
                 break;
             }
             dispResults();
+
         }
 
         // update the edited row
         function editGo(id) {
+          console.log(id);
             db.readTransaction(function(t) {
                 t.executeSql('SELECT * FROM tTravel WHERE id = ?', [id], function(t, r) {
                     var row = r.rows.item(0);
@@ -196,15 +210,15 @@
         window.onload = function() {
             initDisp();
         }
-        
-     
+
+
     </script>
-    
- 
-    
+
+
+
 <body>
     <!--Set Game start-->
-    
+
 <!--
     id top for go back to top
 
@@ -212,34 +226,34 @@
 
 <div id="content">
 
-    <h1> 
+    <h1>
         Waverly Adventure Game Player List
     </h1>
-   
-    
 
-    
+
+
+
 
     <div id="form">
         <!-- id top for go back to top-->
         <form id="PlayerForm" "top title_position">
             <table class="form">
-                              
+
                 <!-- Create three input blank areas-->
-                
+
                 <tr><td class="label"> Name </td>
-                    <td> <input type="text" name="traveler" /> 
+                    <td> <input type="text" name="traveler" />
                     </td>
                 </tr>
-                
+
                 <tr><td class="label"> Path </td>
-                    <td> 
-                        <input type="text" name="destination" />                       
+                    <td>
+                        <input type="text" name="destination" />
                     </td>
-                </tr> 
-                
+                </tr>
+
                 <tr><td class="label"> Results </td>
-                    <td> <input type="text" name="transportation" /> 
+                    <td> <input type="text" name="transportation" />
                     </td>
                 </tr>
 
@@ -249,45 +263,75 @@
             </table>
         <input id="inputAction" type="hidden" name="action" value="add" />
         <input id="inputKey" type="hidden" name="key" value="0" />
+        <!-- these two input for holding name and id values for other use-->
+        <input type = "hidden" id="user-name"/>
+        <input type = "hidden" id="user-id"/>
         </form>
     </div>
-    
-    
-    
-    
+
+
+
+
     <!--    Get Random number for choosing Game-->
 
     <p id="text">There are three sections in this game, we have randomly choose click below</p>
+    <p id="demo"> This is a team </p>
     <button id="myButton">Choose character</button>
     <script type= "text/javascript">
-        
-        
-        
+
+
+
 //        问题所在处:可以得到address（addr here），但是不知道如何把它update进首页的  table里的path
         // Get it (step-1.html) from the local storage
         var selected = localStorage.getItem('selected');
-        if (selected!=null) {
-            
-            //<p id="demo"> This is a team </p>
-            
-            //document.getElementById("demo").innerHTML = selected;
-            
-            //update on form table
 
-            
-            //window.alert("It works!"+selected);            
+        if (selected!=null) {
+
+            document.getElementById("demo").innerHTML = selected;
+            //拿到之前add进table的人的名字和id， 为了下面添加path做准备。where traveler = ?, id = ?
+            var userName = document.getElementById("user-name").value;
+            var userID = document.getElementById("user-id").value;
+            console.log(userName);
+            console.log(userID);
+            var db = prepareDatabase();
+            if(db != null){
+              console.log("not null");
+            }
+            db.transaction(function(t) {
+                //这里把我的名字改成你的table里面加的人的名字，就能把path更新到table里面了
+                t.executeSql('SELECT id FROM tTravel WHERE traveler = ?', ["Zhihao Zhang"], function(t, r) {
+                    try {
+                        var row = r.rows.item(0);
+                        console.log(row.id);
+
+                        t.executeSql(' UPDATE tTravel SET destination = ? WHERE id = ?',
+                                  [selected, row.id ]
+                        );
+                    } catch (e) {
+                        console.log(e);
+                    }
+
+                });
+
+            }, function(){
+                resetPlayerForm();
+            });
+
+
+
+            window.alert("It works!"+selected);
         }
-        
-        
-        
-        
+
+
+
+
         document.getElementById("myButton").onclick = function(){
         var minNumber = 1; // The minimum number you want
         var maxNumber = 3; // The maximum number you want
-        var randomnumber = Math.floor(Math.random() * (maxNumber) + minNumber); 
-        
+        var randomnumber = Math.floor(Math.random() * (maxNumber) + minNumber);
+
         // Generates  random number
-        
+
         var str = "The character you be selected is ";
         //document.getElementById("text").innerHTML = randomnumber;
             switch (randomnumber){
@@ -301,7 +345,7 @@
                     document.getElementById("text").innerHTML = str.link("step-1.html");
                     //window.open("https://www.baidu.com",'_blank');
                     break;
-                    
+
 
                 case 2:
                     str = str + "2";
@@ -317,25 +361,25 @@
                     var result = str.link(window.open("https://www.google.com",'_blank'));
                     document.getElementById("text").innerHTML = str;
                     //window.open("https://www.google.com",'_blank');
-                    break;                  
-            } 
+                    break;
+            }
         }
-        
-        
+
+
     </script>
-    
+
 <!--   Play background music-->
-   <embed src="a.mp3" loop="true" autorun="true" hidden="true"></embed>
-   
-   
-   
-   
-   
-   
-   
-    
-    
-    
+   <!-- <embed src="a.mp3" loop="true" autorun="true" hidden="true"></embed> -->
+
+
+
+
+
+
+
+
+
+
     <p id="rcp" class="message">
         There are <span id="rowCount">_</span> Players in this game.
         <input type="button" value="Empty" onClick="javascript:clearDB()" />
@@ -345,8 +389,7 @@
     </div>
     <!--Back to Top-->
     <p><a href="#top">Back to top</a></p>
-    
+
 </div>
 </body>
 </html>
-
